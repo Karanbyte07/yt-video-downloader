@@ -2,6 +2,10 @@
 
 Fast browser-based video downloader built with Flask and yt-dlp.
 
+## Preview
+
+![insTube Dashboard Preview](assets/dashboard-preview.png)
+
 
 
 ## Why this project
