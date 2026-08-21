@@ -1,0 +1,14 @@
+services:
+  instube:
+    build: .
+    container_name: instube_downloader
+    ports:
+      - "5000:5000"
+    volumes:
+      - downloads_data:/app/static/downloads
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+
+volumes:
+  downloads_data:

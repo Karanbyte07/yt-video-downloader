@@ -111,6 +111,12 @@ def download_with_yt_dlp(url: str, format_type: str = None, media_type: str = No
         # Skip unnecessary processing
         "skip_unavailable_fragments": True,
         "keep_fragments": False,
+        # Extractor arguments to bypass YouTube bot/rate-limit restrictions (HTTP 429)
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "ios", "mweb", "web"]
+            }
+        },
     }
 
     if use_ffmpeg:
@@ -203,6 +209,12 @@ def extract_info_no_download(url: str) -> dict:
         "noplaylist": True,
         # Try to get a single playable URL if possible
         "format": "best[ext=mp4]/bestvideo[ext=mp4]+bestaudio/best",
+        # Extractor arguments to bypass YouTube bot/rate-limit restrictions (HTTP 429)
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "ios", "mweb", "web"]
+            }
+        },
     }
 
     try:

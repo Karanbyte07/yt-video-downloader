@@ -1,0 +1,10 @@
+.venv
+.git
+.gitignore
+.dockerignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+static/downloads/*
