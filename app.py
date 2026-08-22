@@ -34,16 +34,16 @@ def _apply_cookies_if_present(ydl_opts: dict):
     Cookies would only help if they were exported from a browser session on the
     same VPS IP — which is impractical without a browser on the server.
     """
-    # web_embedded bypasses VPS bot detection — YouTube allows embedded player API from any IP.
-    # visionos uses HLS streams as fallback. android/ios as additional fallbacks.
     ydl_opts.pop("cookiefile", None)
     ydl_opts["extractor_args"] = {
         "youtube": {
-            "player_client": ["web_embedded", "visionos", "android", "ios"]
+            "player_client": ["web", "mweb", "web_embedded", "visionos", "android", "ios"],
+            "pot_provider": ["bgutil:http://bgutil-provider:4416"]
         }
     }
     if os.path.exists(COOKIES_FILE) and os.path.getsize(COOKIES_FILE) > 50:
-        logger.info(f"Note: cookies.txt found but not used (home IP cookies cause VPS session rejection)")
+        logger.info(f"Loaded bgutil PO Token provider at http://bgutil-provider:4416")
+
 
 
 
@@ -150,9 +150,11 @@ def download_with_yt_dlp(url: str, format_type: str = None, media_type: str = No
         # Embedded clients bypass datacenter IP bot detection
         "extractor_args": {
             "youtube": {
-                "player_client": ["web_embedded", "visionos", "android", "ios"]
+                "player_client": ["web", "mweb", "web_embedded", "visionos", "android", "ios"],
+                "pot_provider": ["bgutil:http://bgutil-provider:4416"]
             }
         },
+
     }
 
     _apply_cookies_if_present(ydl_opts)
@@ -267,9 +269,11 @@ def extract_info_no_download(url: str) -> dict:
         # Embedded clients bypass datacenter IP bot detection
         "extractor_args": {
             "youtube": {
-                "player_client": ["web_embedded", "visionos", "android", "ios"]
+                "player_client": ["web", "mweb", "web_embedded", "visionos", "android", "ios"],
+                "pot_provider": ["bgutil:http://bgutil-provider:4416"]
             }
         },
+
     }
 
 

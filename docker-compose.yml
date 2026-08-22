@@ -10,6 +10,15 @@ services:
     restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1
+    networks:
+      - default
+      - rag_network
 
 volumes:
   downloads_data:
+
+networks:
+  default:
+  rag_network:
+    name: rag-based-ai-teaching-assistant_default
+    external: true

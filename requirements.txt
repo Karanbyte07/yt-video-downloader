@@ -1,2 +1,3 @@
 Flask
 yt-dlp>=2025.1.15
+bgutil-ytdlp-pot-provider
