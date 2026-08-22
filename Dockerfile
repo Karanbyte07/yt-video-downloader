@@ -1,17 +1,23 @@
 FROM python:3.11-slim
 
-# Install system dependencies including ffmpeg and nodejs (for yt-dlp JS runtime challenge solving)
+# Install system dependencies: ffmpeg, curl, unzip (needed for Deno install)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
-    nodejs \
     curl \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Deno (JS runtime for yt-dlp EJS/n-challenge signature solving)
+RUN curl -fsSL https://deno.land/install.sh | DENO_INSTALL=/usr/local sh
+
+# Verify Deno is installed and accessible
+RUN deno --version
 
 WORKDIR /app
 
-# Copy requirements and install Python dependencies + Gunicorn production server
+# Copy requirements and install latest Python dependencies + Gunicorn
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt gunicorn
+RUN pip install --no-cache-dir --upgrade -r requirements.txt gunicorn
 
 # Copy application files
 COPY . .

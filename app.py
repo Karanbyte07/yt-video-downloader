@@ -147,10 +147,12 @@ def download_with_yt_dlp(url: str, format_type: str = None, media_type: str = No
         # Skip unnecessary processing
         "skip_unavailable_fragments": True,
         "keep_fragments": False,
-        # Extractor arguments to bypass YouTube bot/rate-limit restrictions (HTTP 429)
+        # Use Deno as JS runtime for n-challenge/EJS signature solving
+        "js_runtimes": ["deno"],
+        # Embedded clients bypass datacenter IP bot detection
         "extractor_args": {
             "youtube": {
-                "player_client": ["android", "ios", "mweb", "web"]
+                "player_client": ["web_embedded", "visionos", "android", "ios"]
             }
         },
     }
@@ -264,14 +266,15 @@ def extract_info_no_download(url: str) -> dict:
     ydl_opts = {
         "quiet": True,
         "noplaylist": True,
+        # Use Deno as JS runtime for n-challenge/EJS signature solving
+        "js_runtimes": ["deno"],
         "extractor_args": {
             "youtube": {
                 "player_client": ["web_embedded", "visionos", "android", "ios"]
             }
         },
-
-
     }
+
 
     _apply_cookies_if_present(ydl_opts)
 
