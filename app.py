@@ -33,7 +33,7 @@ def _apply_cookies_if_present(ydl_opts: dict):
                     ydl_opts["cookiefile"] = COOKIES_FILE
                     ydl_opts["extractor_args"] = {
                         "youtube": {
-                            "player_client": ["web", "mweb", "android"]
+                            "player_client": ["tv", "visionos", "android", "ios", "mweb", "web"]
                         }
                     }
                     logger.info(f"Loaded YouTube cookies from: {COOKIES_FILE}")
@@ -41,13 +41,15 @@ def _apply_cookies_if_present(ydl_opts: dict):
         except Exception as e:
             logger.warning(f"Error reading cookies file: {e}")
 
-    # Fallback to mobile clients when cookies are missing or invalid
+    # Fallback to TV, VisionOS, and mobile clients when cookies are missing or invalid
     ydl_opts.pop("cookiefile", None)
     ydl_opts["extractor_args"] = {
         "youtube": {
-            "player_client": ["android", "ios", "mweb", "web"]
+            "player_client": ["tv", "visionos", "android", "ios", "mweb", "web"]
         }
     }
+
+
 
 
 
@@ -191,9 +193,10 @@ def download_with_yt_dlp(url: str, format_type: str = None, media_type: str = No
             ydl_opts.pop("cookiefile", None)
             ydl_opts["extractor_args"] = {
                 "youtube": {
-                    "player_client": ["android", "ios", "mweb", "web"]
+                    "player_client": ["visionos", "android", "ios", "mweb", "web"]
                 }
             }
+
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=True)
                 filename = ydl.prepare_filename(info)
@@ -279,9 +282,10 @@ def extract_info_no_download(url: str) -> dict:
             ydl_opts.pop("cookiefile", None)
             ydl_opts["extractor_args"] = {
                 "youtube": {
-                    "player_client": ["android", "ios", "mweb", "web"]
+                    "player_client": ["visionos", "android", "ios", "mweb", "web"]
                 }
             }
+
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
         else:
