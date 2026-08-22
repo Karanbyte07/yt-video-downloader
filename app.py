@@ -170,9 +170,25 @@ def download_with_yt_dlp(url: str, format_type: str = None, media_type: str = No
         # Note: audio codec will likely be AAC/Opus, not MP3.
         ydl_opts.pop("prefer_ffmpeg", None)
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        filename = ydl.prepare_filename(info)
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            filename = ydl.prepare_filename(info)
+    except Exception as first_err:
+        if "cookiefile" in ydl_opts:
+            logger.warning(f"Download with cookies failed ({first_err}). Retrying without cookies using mobile client fallback...")
+            ydl_opts.pop("cookiefile", None)
+            ydl_opts["extractor_args"] = {
+                "youtube": {
+                    "player_client": ["android", "ios", "mweb", "web"]
+                }
+            }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+                filename = ydl.prepare_filename(info)
+        else:
+            raise
+
         
         # Get actual downloaded filename (may differ from prepared filename)
         # This handles cases where yt-dlp renamed the file due to conflicts
@@ -234,7 +250,6 @@ def extract_info_no_download(url: str) -> dict:
     ydl_opts = {
         "quiet": True,
         "noplaylist": True,
-        # Extractor arguments to bypass YouTube bot/rate-limit restrictions (HTTP 429)
         "extractor_args": {
             "youtube": {
                 "player_client": ["android", "ios", "mweb", "web"]
@@ -242,16 +257,26 @@ def extract_info_no_download(url: str) -> dict:
         },
     }
 
-
     _apply_cookies_if_present(ydl_opts)
-
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-    except Exception as e:
-        logger.error(f"Error extracting info: {str(e)}")
-        raise
+    except Exception as first_err:
+        if "cookiefile" in ydl_opts:
+            logger.warning(f"Extraction with cookies failed: {first_err}. Retrying without cookies using mobile client fallback...")
+            ydl_opts.pop("cookiefile", None)
+            ydl_opts["extractor_args"] = {
+                "youtube": {
+                    "player_client": ["android", "ios", "mweb", "web"]
+                }
+            }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+        else:
+            logger.error(f"Error extracting info: {str(first_err)}")
+            raise
+
 
     # Determine preview URL and best available quality/format
     preview_url = None
