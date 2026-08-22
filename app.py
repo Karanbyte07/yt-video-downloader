@@ -19,6 +19,16 @@ app = Flask(__name__, template_folder='templates', static_folder='static')
 DOWNLOAD_FOLDER = os.path.join(app.static_folder, 'downloads')
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
+# Cookie configuration for YouTube authentication
+COOKIES_FILE = os.environ.get("COOKIES_PATH") or os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cookies.txt')
+
+def _apply_cookies_if_present(ydl_opts: dict):
+    """If cookies.txt exists and is non-empty, inject cookiefile into yt-dlp options."""
+    if os.path.exists(COOKIES_FILE) and os.path.getsize(COOKIES_FILE) > 10:
+        ydl_opts["cookiefile"] = COOKIES_FILE
+        logger.info(f"Loaded YouTube cookies from: {COOKIES_FILE}")
+
+
 
 # ----------------------------
 # Helper: sanitize and download
@@ -119,6 +129,9 @@ def download_with_yt_dlp(url: str, format_type: str = None, media_type: str = No
         },
     }
 
+    _apply_cookies_if_present(ydl_opts)
+
+
     if use_ffmpeg:
         if media_type == "audio":
             # For audio-only downloads, ensure MP3 output
@@ -216,6 +229,9 @@ def extract_info_no_download(url: str) -> dict:
             }
         },
     }
+
+    _apply_cookies_if_present(ydl_opts)
+
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:

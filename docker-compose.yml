@@ -6,6 +6,7 @@ services:
       - "5005:5000"
     volumes:
       - downloads_data:/app/static/downloads
+      - ./cookies.txt:/app/cookies.txt
     restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1
