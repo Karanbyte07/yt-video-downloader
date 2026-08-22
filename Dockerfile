@@ -19,6 +19,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade -r requirements.txt gunicorn
 
+# Pre-cache EJS challenge solver scripts from GitHub (required by yt-dlp for JS signature solving)
+RUN yt-dlp --remote-components ejs:github --no-download "https://www.youtube.com/watch?v=dQw4w9WgXcQ" 2>/dev/null || true
+
 # Copy application files
 COPY . .
 

@@ -147,8 +147,10 @@ def download_with_yt_dlp(url: str, format_type: str = None, media_type: str = No
         # Skip unnecessary processing
         "skip_unavailable_fragments": True,
         "keep_fragments": False,
-        # Use Deno as JS runtime for n-challenge/EJS signature solving
+        # Use Deno as JS runtime + EJS solver scripts for n-challenge signature solving
         "js_runtimes": ["deno"],
+        "remote_components": "ejs:github",
+
         # Embedded clients bypass datacenter IP bot detection
         "extractor_args": {
             "youtube": {
@@ -266,8 +268,9 @@ def extract_info_no_download(url: str) -> dict:
     ydl_opts = {
         "quiet": True,
         "noplaylist": True,
-        # Use Deno as JS runtime for n-challenge/EJS signature solving
+        # Use Deno as JS runtime + EJS solver scripts for n-challenge signature solving
         "js_runtimes": ["deno"],
+        "remote_components": "ejs:github",
         "extractor_args": {
             "youtube": {
                 "player_client": ["web_embedded", "visionos", "android", "ios"]
