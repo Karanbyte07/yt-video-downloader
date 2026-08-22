@@ -34,16 +34,17 @@ def _apply_cookies_if_present(ydl_opts: dict):
     Cookies would only help if they were exported from a browser session on the
     same VPS IP — which is impractical without a browser on the server.
     """
-    # Always use visionos first — uses HLS streams, no JS signature solving needed,
-    # no bot detection on datacenter IPs, works for all public YouTube videos.
+    # web_embedded bypasses VPS bot detection — YouTube allows embedded player API from any IP.
+    # visionos uses HLS streams as fallback. android/ios as additional fallbacks.
     ydl_opts.pop("cookiefile", None)
     ydl_opts["extractor_args"] = {
         "youtube": {
-            "player_client": ["visionos", "android", "ios", "tv"]
+            "player_client": ["web_embedded", "visionos", "android", "ios"]
         }
     }
     if os.path.exists(COOKIES_FILE) and os.path.getsize(COOKIES_FILE) > 50:
         logger.info(f"Note: cookies.txt found but not used (home IP cookies cause VPS session rejection)")
+
 
 
 
@@ -265,9 +266,10 @@ def extract_info_no_download(url: str) -> dict:
         "noplaylist": True,
         "extractor_args": {
             "youtube": {
-                "player_client": ["tv", "visionos", "android", "ios"]
+                "player_client": ["web_embedded", "visionos", "android", "ios"]
             }
         },
+
 
     }
 
@@ -282,9 +284,10 @@ def extract_info_no_download(url: str) -> dict:
             ydl_opts.pop("cookiefile", None)
             ydl_opts["extractor_args"] = {
                 "youtube": {
-                    "player_client": ["tv", "visionos", "android", "ios"]
+                    "player_client": ["web_embedded", "visionos", "android", "ios"]
                 }
             }
+
 
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
