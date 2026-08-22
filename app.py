@@ -23,37 +23,29 @@ os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 COOKIES_FILE = os.environ.get("COOKIES_PATH") or os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cookies.txt')
 
 def _apply_cookies_if_present(ydl_opts: dict):
-    """If cookies.txt exists and contains valid YouTube session cookies, inject cookiefile.
+    """Configure yt-dlp player clients.
 
-    Note: Only 'tv' and 'web' clients support cookie-based authentication in yt-dlp.
-    visionos/android/ios are automatically skipped by yt-dlp when cookies are provided.
-    Without cookies, 'tv' and 'visionos' work best on datacenter/VPS IPs.
+    Home-browser cookies do NOT work on VPS/datacenter IPs because YouTube
+    ties sessions to IP addresses. Using them causes immediate session rejection.
+
+    Instead, we always use visionos (HLS streams, no JS/cookies needed) as the
+    primary client, which works reliably on VPS IPs for public videos.
+
+    Cookies would only help if they were exported from a browser session on the
+    same VPS IP — which is impractical without a browser on the server.
     """
-    if os.path.exists(COOKIES_FILE) and os.path.getsize(COOKIES_FILE) > 50:
-        try:
-            with open(COOKIES_FILE, "r", encoding="utf-8", errors="ignore") as f:
-                content = f.read()
-                # Ensure the cookie file contains actual YouTube session credentials
-                if any(k in content for k in ("LOGIN_INFO", "SAPISID", "__Secure-3PAPISID", "SID")):
-                    ydl_opts["cookiefile"] = COOKIES_FILE
-                    # Only tv and web support cookies; others are auto-skipped by yt-dlp
-                    ydl_opts["extractor_args"] = {
-                        "youtube": {
-                            "player_client": ["tv", "web"]
-                        }
-                    }
-                    logger.info(f"Loaded YouTube cookies from: {COOKIES_FILE}")
-                    return
-        except Exception as e:
-            logger.warning(f"Error reading cookies file: {e}")
-
-    # No valid cookies — use tv+visionos which work on VPS IPs without JS signature solving
+    # Always use visionos first — uses HLS streams, no JS signature solving needed,
+    # no bot detection on datacenter IPs, works for all public YouTube videos.
     ydl_opts.pop("cookiefile", None)
     ydl_opts["extractor_args"] = {
         "youtube": {
-            "player_client": ["tv", "visionos", "android", "ios"]
+            "player_client": ["visionos", "android", "ios", "tv"]
         }
     }
+    if os.path.exists(COOKIES_FILE) and os.path.getsize(COOKIES_FILE) > 50:
+        logger.info(f"Note: cookies.txt found but not used (home IP cookies cause VPS session rejection)")
+
+
 
 
 
