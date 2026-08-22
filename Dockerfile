@@ -1,8 +1,9 @@
 FROM python:3.11-slim
 
-# Install system dependencies including ffmpeg for audio/video merging
+# Install system dependencies including ffmpeg and nodejs (for yt-dlp JS runtime challenge solving)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
+    nodejs \
     curl \
     && rm -rf /var/lib/apt/lists/*
 

@@ -24,9 +24,22 @@ COOKIES_FILE = os.environ.get("COOKIES_PATH") or os.path.join(os.path.dirname(os
 
 def _apply_cookies_if_present(ydl_opts: dict):
     """If cookies.txt exists and is non-empty, inject cookiefile into yt-dlp options."""
-    if os.path.exists(COOKIES_FILE) and os.path.getsize(COOKIES_FILE) > 10:
+    if os.path.exists(COOKIES_FILE) and os.path.getsize(COOKIES_FILE) > 50:
         ydl_opts["cookiefile"] = COOKIES_FILE
+        ydl_opts["extractor_args"] = {
+            "youtube": {
+                "player_client": ["web", "mweb", "android"]
+            }
+        }
         logger.info(f"Loaded YouTube cookies from: {COOKIES_FILE}")
+    else:
+        ydl_opts["extractor_args"] = {
+            "youtube": {
+                "player_client": ["android", "ios", "mweb", "web"]
+            }
+        }
+
+
 
 
 
@@ -75,25 +88,26 @@ def download_with_yt_dlp(url: str, format_type: str = None, media_type: str = No
         # Video downloads with specific resolution
         if format_type == "1080p":
             if use_ffmpeg:
-                format_str = "bestvideo[height<=1080][ext=mp4][vcodec^=avc1]+bestaudio/best[height<=1080][ext=mp4]/best[height<=1080]"
+                format_str = "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best"
             else:
-                format_str = "best[height<=1080][ext=mp4][acodec!=none]/best[height<=1080][acodec!=none]"
+                format_str = "best[height<=1080][acodec!=none]/best[height<=1080]"
         elif format_type == "720p":
             if use_ffmpeg:
-                format_str = "bestvideo[height<=720][ext=mp4][vcodec^=avc1]+bestaudio/best[height<=720][ext=mp4]/best[height<=720]"
+                format_str = "bestvideo[height<=720]+bestaudio/best[height<=720]/best"
             else:
-                format_str = "best[height<=720][ext=mp4][acodec!=none]/best[height<=720][acodec!=none]"
+                format_str = "best[height<=720][acodec!=none]/best[height<=720]"
         elif format_type == "480p":
             if use_ffmpeg:
-                format_str = "bestvideo[height<=480][ext=mp4][vcodec^=avc1]+bestaudio/best[height<=480][ext=mp4]/best[height<=480]"
+                format_str = "bestvideo[height<=480]+bestaudio/best[height<=480]/best"
             else:
-                format_str = "best[height<=480][ext=mp4][acodec!=none]/best[height<=480][acodec!=none]"
+                format_str = "best[height<=480][acodec!=none]/best[height<=480]"
         else:
             # Default: best quality
             if use_ffmpeg:
                 format_str = "bestvideo+bestaudio/best"
             else:
                 format_str = "best[acodec!=none]/best"
+
 
     # Set output template based on media type
     if media_type == "audio":
@@ -220,8 +234,6 @@ def extract_info_no_download(url: str) -> dict:
     ydl_opts = {
         "quiet": True,
         "noplaylist": True,
-        # Try to get a single playable URL if possible
-        "format": "best[ext=mp4]/bestvideo[ext=mp4]+bestaudio/best",
         # Extractor arguments to bypass YouTube bot/rate-limit restrictions (HTTP 429)
         "extractor_args": {
             "youtube": {
@@ -229,6 +241,7 @@ def extract_info_no_download(url: str) -> dict:
             }
         },
     }
+
 
     _apply_cookies_if_present(ydl_opts)
 
