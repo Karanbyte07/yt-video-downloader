@@ -22,9 +22,11 @@ Thumbs.db
 *.log
 logs/
 
-# App artifacts
+# App artifacts & secrets
 static/downloads/
 static/*.tmp
+cookies.txt
+
 
 # Flask instance folder
 instance/
