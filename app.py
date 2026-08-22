@@ -23,7 +23,12 @@ os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 COOKIES_FILE = os.environ.get("COOKIES_PATH") or os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cookies.txt')
 
 def _apply_cookies_if_present(ydl_opts: dict):
-    """If cookies.txt exists and contains valid YouTube session cookies, inject cookiefile."""
+    """If cookies.txt exists and contains valid YouTube session cookies, inject cookiefile.
+
+    Note: Only 'tv' and 'web' clients support cookie-based authentication in yt-dlp.
+    visionos/android/ios are automatically skipped by yt-dlp when cookies are provided.
+    Without cookies, 'tv' and 'visionos' work best on datacenter/VPS IPs.
+    """
     if os.path.exists(COOKIES_FILE) and os.path.getsize(COOKIES_FILE) > 50:
         try:
             with open(COOKIES_FILE, "r", encoding="utf-8", errors="ignore") as f:
@@ -31,9 +36,10 @@ def _apply_cookies_if_present(ydl_opts: dict):
                 # Ensure the cookie file contains actual YouTube session credentials
                 if any(k in content for k in ("LOGIN_INFO", "SAPISID", "__Secure-3PAPISID", "SID")):
                     ydl_opts["cookiefile"] = COOKIES_FILE
+                    # Only tv and web support cookies; others are auto-skipped by yt-dlp
                     ydl_opts["extractor_args"] = {
                         "youtube": {
-                            "player_client": ["tv", "visionos", "android", "ios", "mweb", "web"]
+                            "player_client": ["tv", "web"]
                         }
                     }
                     logger.info(f"Loaded YouTube cookies from: {COOKIES_FILE}")
@@ -41,11 +47,11 @@ def _apply_cookies_if_present(ydl_opts: dict):
         except Exception as e:
             logger.warning(f"Error reading cookies file: {e}")
 
-    # Fallback to TV, VisionOS, and mobile clients when cookies are missing or invalid
+    # No valid cookies — use tv+visionos which work on VPS IPs without JS signature solving
     ydl_opts.pop("cookiefile", None)
     ydl_opts["extractor_args"] = {
         "youtube": {
-            "player_client": ["tv", "visionos", "android", "ios", "mweb", "web"]
+            "player_client": ["tv", "visionos", "android", "ios"]
         }
     }
 
@@ -193,9 +199,10 @@ def download_with_yt_dlp(url: str, format_type: str = None, media_type: str = No
             ydl_opts.pop("cookiefile", None)
             ydl_opts["extractor_args"] = {
                 "youtube": {
-                    "player_client": ["visionos", "android", "ios", "mweb", "web"]
+                    "player_client": ["tv", "visionos", "android", "ios"]
                 }
             }
+
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=True)
@@ -266,9 +273,10 @@ def extract_info_no_download(url: str) -> dict:
         "noplaylist": True,
         "extractor_args": {
             "youtube": {
-                "player_client": ["android", "ios", "mweb", "web"]
+                "player_client": ["tv", "visionos", "android", "ios"]
             }
         },
+
     }
 
     _apply_cookies_if_present(ydl_opts)
@@ -282,9 +290,10 @@ def extract_info_no_download(url: str) -> dict:
             ydl_opts.pop("cookiefile", None)
             ydl_opts["extractor_args"] = {
                 "youtube": {
-                    "player_client": ["visionos", "android", "ios", "mweb", "web"]
+                    "player_client": ["tv", "visionos", "android", "ios"]
                 }
             }
+
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
