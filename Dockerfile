@@ -1,17 +1,18 @@
 FROM python:3.11-slim
 
-# Install system dependencies: ffmpeg, curl, unzip (needed for Deno install)
+# Install system dependencies: ffmpeg, curl, unzip, git (for Deno and bgutil token generator)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     curl \
     unzip \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Deno (JS runtime for yt-dlp EJS/n-challenge signature solving)
 RUN curl -fsSL https://deno.land/install.sh | DENO_INSTALL=/usr/local sh
 
-# Verify Deno is installed and accessible
-RUN deno --version
+# Clone bgutil PO token generator source for script-deno provider
+RUN git clone https://github.com/brainicism/bgutil-ytdlp-pot-provider.git /app/bgutil-ytdlp-pot-provider
 
 WORKDIR /app
 
@@ -19,7 +20,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade -r requirements.txt gunicorn
 
-# Pre-cache EJS challenge solver scripts from GitHub (required by yt-dlp for JS signature solving)
+# Pre-cache EJS challenge solver scripts from GitHub
 RUN yt-dlp --remote-components ejs:github --no-download "https://www.youtube.com/watch?v=dQw4w9WgXcQ" 2>/dev/null || true
 
 # Copy application files

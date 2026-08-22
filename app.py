@@ -38,9 +38,10 @@ def _apply_cookies_if_present(ydl_opts: dict):
     ydl_opts["extractor_args"] = {
         "youtube": {
             "player_client": ["web", "mweb", "web_embedded", "visionos", "android", "ios"],
-            "pot_provider": ["bgutil:http://bgutil-provider:4416"]
+            "pot_provider": ["bgutil:script-deno:server_home=/app/bgutil-ytdlp-pot-provider/server"]
         }
     }
+
     if os.path.exists(COOKIES_FILE) and os.path.getsize(COOKIES_FILE) > 50:
         logger.info(f"Loaded bgutil PO Token provider at http://bgutil-provider:4416")
 
@@ -151,9 +152,10 @@ def download_with_yt_dlp(url: str, format_type: str = None, media_type: str = No
         "extractor_args": {
             "youtube": {
                 "player_client": ["web", "mweb", "web_embedded", "visionos", "android", "ios"],
-                "pot_provider": ["bgutil:http://bgutil-provider:4416"]
+                "pot_provider": ["bgutil:script-deno:server_home=/app/bgutil-ytdlp-pot-provider/server"]
             }
         },
+
 
     }
 
@@ -270,9 +272,10 @@ def extract_info_no_download(url: str) -> dict:
         "extractor_args": {
             "youtube": {
                 "player_client": ["web", "mweb", "web_embedded", "visionos", "android", "ios"],
-                "pot_provider": ["bgutil:http://bgutil-provider:4416"]
+                "pot_provider": ["bgutil:script-deno:server_home=/app/bgutil-ytdlp-pot-provider/server"]
             }
         },
+
 
     }
 
